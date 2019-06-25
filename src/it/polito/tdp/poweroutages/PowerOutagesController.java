@@ -5,9 +5,13 @@
 package it.polito.tdp.poweroutages;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 
+import it.polito.tdp.poweroutages.model.Adiacenza;
 import it.polito.tdp.poweroutages.model.Model;
+import it.polito.tdp.poweroutages.model.Nerc;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -32,7 +36,7 @@ public class PowerOutagesController {
     private Button btnCreaGrafo; // Value injected by FXMLLoader
 
     @FXML // fx:id="cmbBoxNerc"
-    private ComboBox<?> cmbBoxNerc; // Value injected by FXMLLoader
+    private ComboBox<Nerc> cmbBoxNerc; // Value injected by FXMLLoader
 
     @FXML // fx:id="btnVisualizzaVicini"
     private Button btnVisualizzaVicini; // Value injected by FXMLLoader
@@ -45,7 +49,12 @@ public class PowerOutagesController {
 
     @FXML
     void doCreaGrafo(ActionEvent event) {
-
+    	this.txtResult.clear();
+    	this.model.creaGrafo();
+    	this.txtResult.appendText(String.format("Creato grafo con %d vertici e %d archi\n", model.getNumVertici(), 
+    			model.getNumArchi()));
+    	
+    	this.cmbBoxNerc.getItems().addAll(model.getListaNerc());
     }
 
     @FXML
@@ -55,7 +64,26 @@ public class PowerOutagesController {
 
     @FXML
     void doVisualizzaVicini(ActionEvent event) {
-
+    	Nerc nerc = this.cmbBoxNerc.getValue();
+    	
+    	if (nerc == null) {
+    		this.txtResult.appendText("Seleziona un nerc!\n");
+    		return;
+    	}
+    	
+    	List<Adiacenza> vicini = new ArrayList<>();
+    	
+    	vicini = model.trovaVicini(nerc);
+    	
+    	if (vicini == null) {
+    		this.txtResult.appendText(nerc+" non ha nessun vicino\n");
+    		return;
+    	}
+    	
+    	this.txtResult.appendText("Lista dei vicini di "+nerc+":\n");
+    	for (Adiacenza ad : vicini) {
+    		this.txtResult.appendText("-"+ad.getNerc2()+" "+ad.getWeight()+"\n");
+    	}
     }
 
     @FXML // This method is called by the FXMLLoader when initialization is complete
@@ -71,6 +99,6 @@ public class PowerOutagesController {
     
     public void setModel(Model model) {
 		this.model = model;
-
+		
 	}
 }
